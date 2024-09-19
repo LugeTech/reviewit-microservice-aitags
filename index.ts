@@ -18,35 +18,68 @@ interface TagInfo {
   tags: string[];
 }
 
-app.post("/ai/:reviewId", async (req, res) => {
+app.post("/gettags", async (req, res) => {
   try {
-    const reviewId = req.params.reviewId;
-    const reviewFromReviewIt = await getReviewItem(reviewId);
+    const reviewId = req.body.reviewId;
     let reviewTag = await ReviewTag.findOne({ reviewId: reviewId });
-
-    if (!reviewTag) {
+    if (reviewTag) {
+      return res.send({ reviewTag: reviewTag.tags });
+    }
+    const reviewDescription = req.body.description;
+    if (!reviewDescription) {
+      const reviewFromReviewIt = await getReviewItem(reviewId);
+      if (reviewFromReviewIt.data === null) {
+        return res.send({ message: "no data found" }).status(404);
+      }
       reviewTag = new ReviewTag({
         reviewId: reviewId,
         tags: reviewFromReviewIt.data.tags,
       });
+
       await reviewTag.save();
-    }
 
-    if (reviewFromReviewIt.data.description) {
-      const prompt = reviewFromReviewIt.data.description;
-      const aiResponse: TagInfo = await aiQuery(prompt);
-      reviewTag.tags.push(...aiResponse.tags);
-      try {
-        await reviewTag.save();
-      } catch (error) {
-        console.log(error);
+      if (reviewDescription || reviewFromReviewIt.data.description) {
+        const prompt = reviewFromReviewIt.data.description;
+        const aiResponse: TagInfo = await aiQuery(prompt);
+        reviewTag.tags.push(...aiResponse.tags);
+        try {
+          await reviewTag.save();
+        } catch (error) {
+          console.log(error);
+        }
       }
-    }
 
-    res.send({ reviewTag: reviewTag.tags });
+      res.send({ reviewTag: reviewTag.tags });
+    }
   } catch (error) {
     const e = error as Error;
     console.log(e.message);
+  }
+});
+
+app.post("/regen", async (req, res) => {
+  try {
+    const reviewId = req.body.reviewId;
+    const reviewDescription = req.body.description;
+    const reviewTag = await ReviewTag.findOne({ reviewId: reviewId });
+    if (reviewTag) {
+      reviewTag.tags = [];
+      await reviewTag.save();
+      if (reviewDescription) {
+        const prompt = reviewDescription;
+        const aiResponse: TagInfo = await aiQuery(prompt);
+        reviewTag.tags.push(...aiResponse.tags);
+        reviewTag.updatedAt = mongoose.now();
+        try {
+          await reviewTag.save();
+        } catch (error) {
+          res.send(error);
+        }
+      }
+      res.send({ reviewTag: reviewTag.tags });
+    }
+  } catch (error) {
+    res.send(error);
   }
 });
 

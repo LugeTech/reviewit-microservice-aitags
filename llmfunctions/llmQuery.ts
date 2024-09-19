@@ -10,6 +10,7 @@ The tags should be:
 1. Highly relevant to the business's primary activities
 2. Commonly used in job search or industry classification
 3. Broad enough to capture the main sector, not overly specific
+4. All tags must be in common case, meaning they should be written in lowercase letters, even if it is a proper noun.
 
 Return the result as a JSON object with a single key "tags" containing an array of string values. The array should contain 5, 4, or 3 tags based on the prioritization above. Do not include any explanations or additional text.
 

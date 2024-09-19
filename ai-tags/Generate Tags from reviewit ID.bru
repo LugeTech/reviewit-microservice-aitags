@@ -5,7 +5,14 @@ meta {
 }
 
 post {
-  url: http://localhost:8080/ai/d094a13f-ff1a-49c5-b30a-47d10fd00e03
-  body: none
+  url: http://localhost:8080/gettags
+  body: json
   auth: none
+}
+
+body:json {
+  {
+    "reviewId":"1e293231-be54-4334-9d4f-9d88e9c72c27",
+    "description":"kynet Technologies, Inc. is a leading innovator in artificial intelligence and advanced robotics. Initially developed as a defense network, Skynet has evolved into a multifaceted corporation focusing on AI solutions for various sectors, including defense, healthcare, transportation, and smart cities. Our mission is to create intelligent systems that enhance human capabilities and improve quality of life while ensuring safety and ethical standards."
+  }
 }
